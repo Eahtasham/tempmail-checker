@@ -1,0 +1,75 @@
+{
+  "name": "tempmail-checker",
+  "version": "1.0.0",
+  "description": "Fast, isomorphic disposable/temporary email detector with Bloom filter + HashSet pipeline, subdomain detection, and auto-updating domain lists",
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "disposable-email",
+    "temp-mail",
+    "tempmail",
+    "email-validation",
+    "email-checker",
+    "bloom-filter",
+    "disposable",
+    "throwaway-email",
+    "email-verification",
+    "spam-prevention"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Eahtasham/tempmail-checker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Eahtasham/tempmail-checker/issues"
+  },
+  "homepage": "https://github.com/Eahtasham/tempmail-checker#readme",
+  "scripts": {
+    "build:data": "tsx scripts/build-data.ts",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "prepublishOnly": "npm run build:data && npm run build && npm test",
+    "prepare": "npm run build:data && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "prettier": "^3.2.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0",
+    "vitest": "^2.0.0"
+  },
+  "dependencies": {
+    "tldts": "^6.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

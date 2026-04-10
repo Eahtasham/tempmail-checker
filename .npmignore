@@ -1,0 +1,19 @@
+# Source
+src/
+scripts/
+tests/
+
+# Config
+tsconfig.json
+tsup.config.ts
+vitest.config.ts
+.prettierrc
+.github/
+.gitignore
+
+# Coverage
+coverage/
+
+# IDE
+.vscode/
+.idea/

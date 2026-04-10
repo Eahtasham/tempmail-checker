@@ -1,0 +1,65 @@
+name: Update Domain List
+
+on:
+  schedule:
+    # Run every Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    name: Update disposable email domains
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Regenerate domain data
+        run: npm run build:data
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet src/data/; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run tests with updated data
+        if: steps.changes.outputs.changed == 'true'
+        run: npm test
+
+      - name: Create Pull Request
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update disposable email domain list'
+          title: 'chore: update disposable email domain list'
+          body: |
+            Automated weekly update of the disposable email domain list.
+
+            Source: [disposable-email-domains](https://github.com/disposable-email-domains/disposable-email-domains)
+
+            - Updated `src/data/domains.ts`
+            - Rebuilt `src/data/bloom-data.ts`
+            - All tests passing ✅
+          branch: chore/update-domains
+          delete-branch: true
+          labels: |
+            automated
+            dependencies
