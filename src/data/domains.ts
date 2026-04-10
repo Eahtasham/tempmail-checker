@@ -1,6 +1,6 @@
 // AUTO-GENERATED — Do not edit manually. Run `npm run build:data` to regenerate.
 // Source: https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/main/disposable_email_blocklist.conf
-// Generated: 2026-04-10T08:58:20.153Z
+// Generated: 2026-04-10T09:08:42.317Z
 // Total domains: 5361
 
 export const DISPOSABLE_DOMAINS: readonly string[] = [
