@@ -1,7 +1,7 @@
 // AUTO-GENERATED — Do not edit manually. Run `npm run build:data` to regenerate.
 // Source: https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/main/disposable_email_blocklist.conf
-// Generated: 2026-04-10T09:08:42.317Z
-// Total domains: 5361
+// Generated: 2026-04-13T01:24:43.782Z
+// Total domains: 5364
 
 export const DISPOSABLE_DOMAINS: readonly string[] = [
   "0-mail.com",
@@ -716,6 +716,7 @@ export const DISPOSABLE_DOMAINS: readonly string[] = [
   "boxomail.live",
   "boxtemp.com.br",
   "boyaga.com",
+  "bpotogo.com",
   "bptfp.net",
   "brand-app.biz",
   "brandallday.net",
@@ -3305,6 +3306,7 @@ export const DISPOSABLE_DOMAINS: readonly string[] = [
   "naxx.dev",
   "naylonksosmed.com",
   "naymedia.com",
+  "nazisat.com",
   "nbmbb.com",
   "nbzmr.com",
   "ncien.com",
@@ -3601,6 +3603,7 @@ export const DISPOSABLE_DOMAINS: readonly string[] = [
   "paplease.com",
   "para2019.ru",
   "parlimentpetitioner.tk",
+  "parsitv.com",
   "pastebitch.com",
   "pastryofistanbul.com",
   "patity.com",
