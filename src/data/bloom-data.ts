@@ -1,6 +1,6 @@
 // AUTO-GENERATED — Do not edit manually. Run `npm run build:data` to regenerate.
 // Source: https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/main/disposable_email_blocklist.conf
-// Generated: 2026-04-13T13:27:52.409Z
+// Generated: 2026-04-17T14:33:20.605Z
 // Domains: 5365
 // False positive rate: 0.01
 // Bit array size: 51,424 bits (6,428 bytes)

@@ -45,6 +45,12 @@
     "README.md",
     "LICENSE"
   ],
+  "typesVersions": {
+    "*": {
+      "middleware/express": ["./dist/middleware/express.d.ts"],
+      "middleware/fastify": ["./dist/middleware/fastify.d.ts"]
+    }
+  },
   "keywords": [
     "disposable-email",
     "temp-mail",
