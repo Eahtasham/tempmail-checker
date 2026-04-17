@@ -8,6 +8,7 @@ import {
   BLOOM_FILTER_NUM_HASHES,
   BLOOM_FILTER_SIZE,
 } from './data/bloom-data';
+import { Logger } from './logger';
 import type { ValidationResult, ValidatorOptions, ValidatorStats } from './types';
 
 /**
@@ -51,7 +52,8 @@ export class EmailValidator {
   private customBlocklist: Set<string>;
   private updateTimer?: ReturnType<typeof setInterval>;
   private lastUpdated: Date | null = null;
-  private readonly options: Required<ValidatorOptions>;
+  private readonly options: Required<Pick<ValidatorOptions, 'customBlocklist' | 'customAllowlist' | 'autoUpdate' | 'updateInterval' | 'updateUrl' | 'falsePositiveRate'>>;
+  private readonly logger: Logger;
 
   constructor(options?: ValidatorOptions) {
     this.options = {
@@ -62,6 +64,14 @@ export class EmailValidator {
       updateUrl: options?.updateUrl ?? DEFAULT_UPDATE_URL,
       falsePositiveRate: options?.falsePositiveRate ?? 0.01,
     };
+
+    this.logger = new Logger(options?.logging);
+
+    this.logger.debug('Initializing EmailValidator', {
+      autoUpdate: this.options.autoUpdate,
+      customBlocklistSize: this.options.customBlocklist.length,
+      customAllowlistSize: this.options.customAllowlist.length,
+    });
 
     // Initialize from bundled pre-computed data
     this.bloomFilter = BloomFilter.fromBase64(
@@ -85,6 +95,10 @@ export class EmailValidator {
     if (this.options.autoUpdate) {
       this.startAutoUpdate();
     }
+
+    this.logger.info('EmailValidator initialized', {
+      totalDomains: this.hashSet.size,
+    });
   }
 
   /**
@@ -104,6 +118,7 @@ export class EmailValidator {
     const parsed = parseEmail(email);
 
     if (!parsed) {
+      this.logger.debug('Invalid email address', { email });
       return {
         disposable: false,
         email,
@@ -114,10 +129,12 @@ export class EmailValidator {
 
     const { domain } = parsed;
     const domainLevels = getDomainLevels(domain);
+    this.logger.debug('Checking email', { email, domain, levels: domainLevels.length });
 
     // 1. Check allowlist first (highest priority)
     for (const level of domainLevels) {
       if (this.allowlist.has(level)) {
+        this.logger.debug('Domain matched allowlist', { email, matchedDomain: level });
         return {
           disposable: false,
           email,
@@ -131,6 +148,7 @@ export class EmailValidator {
     // 2. Check custom blocklist
     for (const level of domainLevels) {
       if (this.customBlocklist.has(level)) {
+        this.logger.info('Disposable email detected (custom blocklist)', { email, matchedDomain: level });
         return {
           disposable: true,
           email,
@@ -151,11 +169,13 @@ export class EmailValidator {
 
       // Layer 2: Bloom says "maybe" → exact match with HashSet
       if (this.hashSet.has(level)) {
+        const reason = level === domain ? 'blocklist' : 'subdomain_match';
+        this.logger.info('Disposable email detected', { email, matchedDomain: level, reason });
         return {
           disposable: true,
           email,
           domain,
-          reason: level === domain ? 'blocklist' : 'subdomain_match',
+          reason,
           matchedDomain: level,
         };
       }
@@ -163,6 +183,7 @@ export class EmailValidator {
     }
 
     // 4. Not found in any list
+    this.logger.debug('Email passed validation', { email, domain });
     return {
       disposable: false,
       email,
@@ -190,6 +211,7 @@ export class EmailValidator {
    * @throws Error if the fetch fails
    */
   async refresh(): Promise<void> {
+    this.logger.info('Refreshing domain list', { url: this.options.updateUrl });
     const domains = await fetchLatestDomains(this.options.updateUrl);
     const { bloomFilter, hashSet } = rebuildFromDomains(domains, this.options.falsePositiveRate);
 
@@ -203,6 +225,7 @@ export class EmailValidator {
     }
 
     this.lastUpdated = new Date();
+    this.logger.info('Domain list refreshed', { totalDomains: this.hashSet.size });
   }
 
   /**
@@ -235,9 +258,10 @@ export class EmailValidator {
    */
   private startAutoUpdate(): void {
     this.updateTimer = setInterval(() => {
-      this.refresh().catch(() => {
-        // Silently fail — keep using cached data.
-        // In production, users should attach their own error handling via refresh().
+      this.refresh().catch((err: unknown) => {
+        this.logger.warn('Auto-update failed, using cached data', {
+          error: err instanceof Error ? err.message : String(err),
+        });
       });
     }, this.options.updateInterval);
 
@@ -247,7 +271,7 @@ export class EmailValidator {
       typeof this.updateTimer === 'object' &&
       'unref' in this.updateTimer
     ) {
-      (this.updateTimer as NodeJS.Timeout).unref();
+      (this.updateTimer as unknown as { unref: () => void }).unref();
     }
   }
 }

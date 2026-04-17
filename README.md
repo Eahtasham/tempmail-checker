@@ -22,6 +22,8 @@
 - **🧩 Dual API** — Simple functions + powerful class-based API
 - **✅ Custom Lists** — Add your own blocklist/allowlist
 - **📝 Rich Results** — Detailed validation result objects, not just booleans
+- **🪵 Configurable Logging** — Debug, info, warn, error levels with custom handlers
+- **🔌 Framework Middleware** — Ready-to-use plugins for Express and Fastify
 
 ---
 
@@ -170,6 +172,7 @@ Returns `true` if the email is disposable. Convenience wrapper.
 | `updateInterval`   | `number`   | `86400000`   | Refresh interval in ms (default: 24h)  |
 | `updateUrl`        | `string`   | GitHub URL   | Custom URL for domain list             |
 | `falsePositiveRate`| `number`   | `0.01`       | Bloom filter FPR (0.01 = 1%)           |
+| `logging`          | `object`   | `undefined`  | Logging config (see below)             |
 
 ### `validator.check(email): ValidationResult`
 
@@ -277,6 +280,133 @@ parseEmail('user@mail.example.com');
 
 getDomainLevels('mail.example.com');
 // ['mail.example.com', 'example.com']
+```
+
+---
+
+## 🪵 Configurable Logging & Debugging
+
+Logging is **silent by default** — opt-in via options or environment variable.
+
+### Via Options
+
+```typescript
+import { EmailValidator } from 'tempmail-checker';
+
+const validator = new EmailValidator({
+  logging: {
+    level: 'debug', // 'debug' | 'info' | 'warn' | 'error' | 'silent'
+    prefix: '[my-app]', // custom prefix (default: '[tempmail-checker]')
+  },
+});
+
+validator.check('user@mailinator.com');
+// [my-app] DEBUG Checking email { email: 'user@mailinator.com', domain: 'mailinator.com', levels: 1 }
+// [my-app] INFO Disposable email detected { email: 'user@mailinator.com', matchedDomain: 'mailinator.com', reason: 'blocklist' }
+```
+
+### Via Environment Variable
+
+```bash
+TEMPMAIL_LOG_LEVEL=debug node your-app.js
+```
+
+### Custom Log Handler
+
+```typescript
+import { EmailValidator } from 'tempmail-checker';
+
+const validator = new EmailValidator({
+  logging: {
+    level: 'info',
+    handler: (level, message, meta) => {
+      // Send to your logging system (Winston, Pino, etc.)
+      myLogger[level](message, meta);
+    },
+  },
+});
+```
+
+### Standalone Logger
+
+```typescript
+import { createLogger } from 'tempmail-checker';
+
+const logger = createLogger({ level: 'debug' });
+logger.debug('Custom message', { key: 'value' });
+logger.setLevel('warn'); // change at runtime
+```
+
+---
+
+## 🔌 Framework Middleware
+
+### Express
+
+```typescript
+import express from 'express';
+import { createExpressMiddleware } from 'tempmail-checker/middleware/express';
+
+const app = express();
+app.use(express.json());
+
+// Block disposable emails on registration
+app.post('/register',
+  createExpressMiddleware({
+    emailFields: ['body.email'],      // where to find the email (dot notation)
+    blockDisposable: true,            // block with 422 (default)
+    errorMessage: 'Please use a real email address.',
+    errorStatusCode: 422,
+  }),
+  (req, res) => {
+    res.json({ message: 'Registered!' });
+  }
+);
+
+// Or just attach results without blocking
+app.post('/check',
+  createExpressMiddleware({ blockDisposable: false }),
+  (req, res) => {
+    res.json({ validation: req.emailValidation });
+  }
+);
+```
+
+#### Express Middleware Options
+
+| Option             | Type       | Default                                        | Description                                |
+| ------------------ | ---------- | ---------------------------------------------- | ------------------------------------------ |
+| `emailFields`      | `string[]` | `['body.email']`                               | Dot-notation paths to email fields         |
+| `blockDisposable`  | `boolean`  | `true`                                         | Block request if disposable email found    |
+| `errorMessage`     | `string`   | `'Disposable email addresses are not allowed.'`| Error message in the response              |
+| `errorStatusCode`  | `number`   | `422`                                          | HTTP status code for blocked requests      |
+| All `ValidatorOptions` are also supported (customBlocklist, customAllowlist, logging, etc.) |
+
+### Fastify
+
+```typescript
+import Fastify from 'fastify';
+import { fastifyTempmail } from 'tempmail-checker/middleware/fastify';
+
+const app = Fastify();
+
+app.register(fastifyTempmail, {
+  emailFields: ['body.email'],
+  blockDisposable: true,
+  errorMessage: 'Disposable emails not allowed.',
+});
+
+app.post('/register', async (req, reply) => {
+  // If we reach here, the email is not disposable
+  return { message: 'Registered!' };
+});
+
+// Access validation results
+app.post('/check', {
+  preHandler: [],  // plugin hooks run automatically
+}, async (req) => {
+  return { validation: req.emailValidation };
+});
 ```
 
 ---

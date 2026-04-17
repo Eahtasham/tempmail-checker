@@ -1,7 +1,11 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: [
+    'src/index.ts',
+    'src/middleware/express.ts',
+    'src/middleware/fastify.ts',
+  ],
   format: ['cjs', 'esm'],
   dts: true,
   clean: true,

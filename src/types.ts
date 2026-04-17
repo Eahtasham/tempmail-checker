@@ -45,6 +45,9 @@ export interface ValidatorOptions {
 
   /** Bloom filter false positive rate (default: 0.01 = 1%) */
   falsePositiveRate?: number;
+
+  /** Logging configuration */
+  logging?: import('./logger').LoggerOptions;
 }
 
 /**
