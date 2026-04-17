@@ -1,6 +1,6 @@
 {
   "name": "tempmail-checker",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Fast, isomorphic disposable/temporary email detector with Bloom filter + HashSet pipeline, subdomain detection, and auto-updating domain lists",
   "author": "",
   "license": "MIT",
@@ -47,8 +47,12 @@
   ],
   "typesVersions": {
     "*": {
-      "middleware/express": ["./dist/middleware/express.d.ts"],
-      "middleware/fastify": ["./dist/middleware/fastify.d.ts"]
+      "middleware/express": [
+        "./dist/middleware/express.d.ts"
+      ],
+      "middleware/fastify": [
+        "./dist/middleware/fastify.d.ts"
+      ]
     }
   },
   "keywords": [
