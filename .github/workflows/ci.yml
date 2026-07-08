@@ -39,4 +39,8 @@ jobs:
         run: npx tsup
 
       - name: Verify package exports
-        run: npx -y @arethetypeswrong/cli --pack .
+        # attw >= 0.18 requires Node 20+; on Node 18 npx falls back to the
+        # 0.17.x line, which is broken by fflate 0.8.3. The check is static
+        # analysis of the packed tarball, so one Node version suffices.
+        if: matrix.node-version != 18
+        run: npx -y @arethetypeswrong/cli@0.18.4 --pack .
