@@ -35,7 +35,9 @@ jobs:
         run: npx tsup
 
       - name: Verify package exports
-        run: npx -y @arethetypeswrong/cli --pack .
+        # Pinned so an attw/dependency release can't break publishing
+        # (v1.1.2 publish failed on a broken transitive fflate release)
+        run: npx -y @arethetypeswrong/cli@0.18.4 --pack .
 
       - name: Publish to npm
         run: npm publish --access public
